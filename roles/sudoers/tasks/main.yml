@@ -1,0 +1,28 @@
+---
+- name: 管理者グループの作成
+  group: name={{ admin_group }}
+
+- name: 管理者グループをsudoersに追加
+  lineinfile:
+    path: /etc/sudoers
+    state: present
+    regexp: "%{{ admin_group }}"
+    line: "%{{ admin_group }} ALL=(ALL) NOPASSWD: ALL"
+
+- name: 管理者ユーザを管理者グループに追加
+  user: >
+    name={{ item }}
+    group={{ admin_group }}
+    groups={{ user_group }},{{ admin_group }}
+  with_items:  '{{ sudoers }}'
+
+- name: 実際に管理者グループに属するユーザのリストを取得
+  shell: 'getent group {{ admin_group }} | cut -d: -f4 | tr "," "\n"'
+  register: present_sudoers
+
+- name: sudoersに存在しないユーザを管理者グループから外す
+  user: >
+    name={{ item }}
+    groups={{ user_group }}
+  with_items: '{{  present_sudoers.stdout_lines | difference(sudoers) }}'
+  ignore_errors: yes # ユーザが削除済みの場合があるため

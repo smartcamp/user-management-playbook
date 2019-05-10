@@ -1,0 +1,6 @@
+---
+- hosts: app analysis jenkins
+  become: True
+  roles:
+    - common
+    - sudoers

@@ -1,0 +1,39 @@
+---
+- name: ユーザグループの作成
+  group: name={{ user_group }}
+
+- name: ユーザ作成とグループ登録
+  user: >
+    name={{ item.name }}
+    group={{ user_group }}
+    groups={{ user_group }}
+  with_items:  '{{ users }}'
+
+- name: ユーザ作成とグループ登録
+  user: >
+    name={{ item.name }}
+    group={{ user_group }}
+    groups={{ user_group }}
+  with_items:  '{{ users }}'
+
+# Amazon Linux上でauthorized_keyモジュールを実行するのに必須
+- name: libselinux-pythonインストール
+  yum: name=libselinux-python state=present
+  when: "ansible_distribution == 'Amazon'" #Amazon Linux判別
+
+- name: ユーザごとの公開鍵の登録
+  authorized_key: >
+    user={{ item.name }}
+    key={{ item.public_key }}
+  with_items:  '{{ users }}'
+
+- name: インスタンス上のユーザリストの取得
+  shell: 'getent group developer | cut -d: -f4 | tr "," "\n"'
+  register: current_users
+
+- name: usersにないユーザを削除
+  user: >
+    name={{ item }}
+    state=absent
+    remove=yes
+  with_items: "{{ current_users.stdout_lines | difference(users | map(attribute='name') | list) }}"

@@ -1,0 +1,12 @@
+---
+---
+users:
+  - name: 'ug23'
+    public_key: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABA...'
+  - name: 'ug24'
+    public_key: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABB...'
+sudoers:
+  - 'ug23'
+
+admin_group: 'admin'
+user_group: 'developers'
